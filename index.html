@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Learning App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+            background-color: #f9fafb; /* Slightly off-white for the answer background */
+        }
+        .answer.active {
+            max-height: 1000px; /* Adjust as needed */
+        }
+        .question-header .icon {
+            transition: transform 0.3s ease;
+        }
+        .question-header.active .icon {
+            transform: rotate(90deg);
+        }
+        /* Styles for diagram placeholders */
+        img {
+            display: block;
+            position: relative;
+            background-color: #f0f2f5;
+            border: 1px solid #d1d5db;
+            min-height: 10rem;
+            color: #4b5563;
+            font-style: italic;
+            width: 100%;
+            max-width: 28rem; /* Equivalent to max-w-md */
+            margin: 1rem auto;
+            border-radius: 0.375rem; /* rounded */
+        }
+        img::before {
+            content: "🖼️ Diagram Placeholder";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -100%);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        img::after {
+            content: attr(alt);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, 0);
+            width: 90%;
+            text-align: center;
+            font-size: 0.875rem;
+            line-height: 1.25rem;
+            padding-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div id="app" class="container mx-auto px-4 py-8">
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view">
+            <header class="text-center mb-10">
+                <h1 class="text-4xl font-bold text-gray-900">Chemistry Topics Dashboard</h1>
+                <p class="text-lg text-gray-600 mt-2">Select a topic to start learning</p>
+            </header>
+            <main id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Topic links will be inserted here -->
+            </main>
+        </div>
+
+        <!-- Topic View (hidden by default) -->
+        <div id="topic-view" class="hidden">
+            <header class="text-center mb-10">
+                <h1 id="topic-title" class="text-4xl font-bold text-gray-900"></h1>
+            </header>
+
+            <nav class="flex justify-between mb-4">
+                <button id="prev-topic-top" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">&larr; Previous Topic</button>
+                <button id="dashboard-btn-top" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Back to Dashboard</button>
+                <button id="next-topic-top" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Next Topic &rarr;</button>
+            </nav>
+
+            <main id="qa-container" class="space-y-8">
+                <!-- Q&A content will be inserted here -->
+            </main>
+
+            <nav class="flex justify-between mt-8">
+                <button id="prev-topic-bottom" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">&larr; Previous Topic</button>
+                <button id="dashboard-btn-bottom" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Back to Dashboard</button>
+                <button id="next-topic-bottom" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Next Topic &rarr;</button>
+            </nav>
+        </div>
+
+        <footer class="text-center mt-12 text-gray-500">
+            <p>&copy; 2025 Chemistry Study Tool. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const topics = [
+            {
+                id: 'introduction_to_chemistry',
+                title: '1. Introduction to Chemistry',
+                description: 'Learn the basics of chemistry, laboratory apparatus, and safety procedures.',
+                questions: [
+                    {
+                        question: "Wooden splints F and G were placed in different zones of a Bunsen burner flame. (a) Explain the difference in observations between splint F (placed in the middle) and G (placed in the upper region). (b) Name the type of flame that was used.",
+                        answer: "a) Splint F was in the cooler, inner part of the flame, which resulted in less burning, while splint G was in the hotter, upper/outer part of the flame, causing it to burn more.<br>b) Non-luminous flame."
+                    },
+                    {
+                        question: "You have a set of common laboratory apparatus. (a) Give the correct order of apparatus to prepare and investigate the pH of an onion solution. (b) Name one chemical substance and apparatus needed.",
+                        answer: "a) The order would typically be: Mortar and Pestle (to crush the onion), Beaker (to mix with water), Filter Funnel with Filter Paper (to separate the solid from the liquid), and a Test Tube/Beaker to collect the final solution.<br>b) Chemical: Distilled water. Apparatus: Universal indicator solution or pH paper."
+                    },
+                    {
+                        question: "(a) When the air-hole of a Bunsen burner is fully opened, it produces a non-luminous flame. Explain why. (b) Draw a labelled diagram of a non-luminous flame.",
+                        answer: "a) The laboratory gas gets a sufficient supply of oxygen, allowing it to burn completely. This complete combustion produces only carbon dioxide and water, with no unburnt, glowing carbon particles (soot).",
+                        diagram_alt: "A labelled diagram of a non-luminous flame showing the almost colorless region, a green-blue region, and a pale blue region."
+                    },
+                    {
+                        question: "(a) What is a drug? (b) Give two drugs that are commonly abused by the youth.",
+                        answer: "a) A drug is a substance which, when taken, alters the body's chemistry or physiological functions.<br>b) Alcohol, Tobacco."
+                    },
+                    {
+                        question: "The diagram shows methods for collecting gases: Method A (downward delivery) and Method B (over water). (a) Name methods A and B. (b) Which method is suitable for collecting sulphur (IV) oxide? Explain.",
+                        answer: "a) Method A: Downward delivery / upward displacement of air. Method B: Collection over water.<br>b) Method A is suitable because sulphur (IV) oxide is denser than air. It cannot be collected over water as it is soluble.",
+                        diagram_alt: "Diagram of gas collection methods A (downward delivery) and B (over water)."
+                    },
+                    {
+                        question: "A mixture of hexane and water was shaken and left to separate into two layers, P (top) and W (bottom). State the identity of; (i) P (ii) W.",
+                        answer: "i) P is Hexane, as it is immiscible with and less dense than water.<br>ii) W is Water, as it is denser than hexane."
+                    },
+                    {
+                        question: "Name the apparatus shown and state its use.",
+                        answer: "Apparatus 1: Mortar. Use: For crushing or grinding solid substances.<br>Apparatus 2: Crucible. Use: For heating solids to very high temperatures.",
+                        diagram_alt: "Diagrams of a Mortar and a Crucible."
+                    },
+                    {
+                        question: "Explain how the parts labelled T (jet) and U (base) on a Bunsen burner are suited to their functions.",
+                        answer: "T (Jet): It has a very small hole which releases the gas in a high-speed stream. This jet effect helps to draw air into the barrel for mixing.<br>U (Base): It is heavy and has a wide footprint to provide stability and prevent the burner from tipping over."
+                    },
+                    {
+                        question: "Two pieces of paper were placed in different parts of a non-luminous flame. (a) What do the experiments show about the outer region of the flame? (b) Which part of the flame is best for heating? Give a reason.",
+                        answer: "a) The experiment shows the outer region of the flame is the hottest part, as it scorches the paper most.<br>b) The upper tip of the outer flame. This is the hottest region because the fuel gas undergoes complete combustion there."
+                    },
+                    {
+                        question: "A crystal of copper (II) sulphate was placed in a beaker of water and left for two days. State and explain the observations.",
+                        answer: "Observation: The blue crystal dissolved and the blue colour gradually spread throughout the water, making the entire solution uniformly blue.<br>Explanation: The particles (ions) of copper (II) sulphate broke away from the crystal and mixed with the water particles. These ions then moved randomly throughout the water via the process of diffusion until they were evenly distributed."
+                    },
+                    {
+                        question: "Study the ion information: A⁺ (electron config 2.8), B⁺ (electron config 2.8.8), C²⁺ (electron config 2.8). Explain why the ionic radius of: (a) B⁺ is greater than that of A⁺. (b) C²⁺ is smaller than that of A⁺.",
+                        answer: "a) The ion B⁺ has more occupied energy levels (3) than ion A⁺ (2). This means its outermost electrons are further from the nucleus, resulting in a larger ionic radius.<br>b) Both C²⁺ and A⁺ have the same number of electrons (10) and the same number of occupied energy levels (2). However, C²⁺ has a greater nuclear charge (12 protons) than A⁺ (11 protons). This stronger positive charge pulls the electron cloud in more tightly, resulting in a smaller ionic radius for C²⁺."
+                    }
+                ]
+            },
+            {
+                id: 'simple_classification_of_substances',
+                title: '2. Simple Classification of Substances',
+                description: 'Explore the differences between elements, compounds, and mixtures, and learn separation techniques.',
+                questions: [
+                    {
+                        question: "The diagram below shows the heating curve of a pure substance. (a) What physical changes are taking place at points X and Z? (b) Explain what happens to the melting point if sodium chloride is added to this substance.",
+                        answer: "a) At X: Melting is taking place. At Z: Boiling is taking place.<br>b) The melting point will be lowered and will occur over a range of temperatures (become less sharp). This is due to the introduction of an impurity.",
+                        diagram_alt: "Heating curve of a pure substance showing temperature against time, with plateaus for melting (X) and boiling (Z)."
+                    },
+                    { question: "(a) State two differences between a luminous flame and a non-luminous flame. (b) Explain why it is advisable to set a Bunsen burner to luminous flame prior to an experiment.", answer: "a) 1. Luminous flame is sooty/produces soot, while non-luminous does not. 2. Luminous flame is yellow, while non-luminous is blue. 3. Luminous is unsteady and large, while non-luminous is steady and short. 4. Luminous is less hot than non-luminous.<br>b) A luminous flame is clearly visible, which makes it safer as one is less likely to accidentally touch it." },
+                    {
+                        question: "The paper chromatography of a plant extract gave different numbers of spots with different solvents (X=6, Y=2, Z=3). (a) Which is the most suitable solvent for purifying the extract? Explain. (b) Explain why a ballpoint pen cannot be used to mark the solvent front.",
+                        answer: "a) Solvent X is the most suitable. It separated the extract into the highest number of components (6 spots), indicating it is the best at resolving the mixture.<br>b) The ink in a ballpoint pen is itself a mixture of dyes and would be separated by the chromatography process, interfering with the results of the plant extract."
+                    },
+                    { question: "Name the process which takes place when: (a) Solid Carbon (IV) Oxide (dry ice) changes directly into gas. (b) A red litmus paper turns white when dropped into chlorine water. (c) Propene gas molecules are converted into a giant molecule.", answer: "a) Sublimation<br>b) Bleaching<br>c) Polymerization" },
+                    { question: "A sample of copper turnings was found to be contaminated with copper (II) oxide. Describe how a pure sample of copper metal can be separated from the mixture.", answer: "1. Add excess dilute acid (like HCl or H₂SO₄) to the mixture. The copper(II) oxide will react and dissolve, while the copper metal will not.<br>2. Filter the mixture to separate the solid copper metal (residue) from the aqueous salt solution (filtrate).<br>3. Wash the copper residue with distilled water to remove any remaining solution.<br>4. Dry the pure copper turnings." },
+                    { question: "Copper (II) oxide and charcoal are both black solids. How would you distinguish between them?", answer: "Add a dilute mineral acid (e.g., dilute HCl) to separate samples of each solid in test tubes and warm. The copper (II) oxide will dissolve to form a blue solution. The charcoal (carbon) will not dissolve or react." },
+                    { question: "(a) What is chromatography? (b) Give two applications of chromatography.", answer: "a) Chromatography is a technique for separating the components of a mixture based on their different rates of movement through a stationary phase, carried by a mobile phase (solvent).<br>b) 1. Separation of pigments from plant extracts. 2. Analysis of dyes in food colouring. 3. Used in forensics to analyse substances like ink or drugs." },
+                    { question: "The two elements P and R were separately burned in air. P formed a basic white solid powder. R formed two colorless gases, L (strongly acidic) and M (slightly acidic). (a) Suggest the identity of element R. (b) Describe how the nature of the solutions of the oxides were determined.", answer: "a) Element R is likely Sulphur. It burns in air to form sulphur dioxide (strongly acidic) and some sulphur trioxide.<br>b) The product was dissolved in water, and then blue and red litmus papers were dipped into the resulting solution. An acidic solution turns blue litmus paper red. A basic solution turns red litmus paper blue." },
+                    {
+                        question: "A paper chromatogram for three brands of soft drinks (A, B, C) was run. Brands A and C were found to contain banned artificial food additives, indicated by numbers. Which numbers indicate the banned additives?",
+                        answer: "The answer provided is '5 and 4'. This implies that on the chromatogram, the spots for the banned additives corresponded to positions 5 and 4.",
+                        diagram_alt: "A paper chromatogram showing spots for three soft drinks and known banned additives."
+                    },
+                    { question: "Without using any laboratory chemical, describe a simple experiment to distinguish between calcium hydrogen carbonate and sodium hydrogen carbonate solutions.", answer: "Heat equal volumes of each solution in separate test tubes. The calcium hydrogen carbonate solution will form a white precipitate of calcium carbonate. The sodium hydrogen carbonate solution will show no precipitate, although it will decompose to give off carbon dioxide gas. Equation for Calcium: Ca(HCO₃)₂(aq) ⟶ CaCO₃(s) + H₂O(l) + CO₂(g)." },
+                    {
+                        question: "Substance Q has a melting point of 15°C and boiling point of 70°C. (a) Draw a sketch of the heating curve for Q, labeling the axes. (b) State the physical state of substance Q at room temperature (approx. 25°C).",
+                        answer: "a) [Image Placeholder: A graph of Temperature (°C) vs. Time (minutes) showing a rising slope, then a plateau at 15°C (melting), another rising slope, and a second plateau at 70°C (boiling)].<br>b) Liquid, because room temperature is between its melting and boiling points.",
+                        diagram_alt: "Heating curve for substance Q, showing temperature vs. time with plateaus at 15°C and 70°C."
+                    },
+                    { question: "Cooking oils have a boiling range of 23°C to 27°C. (i) What evidence suggests cooking oil is a mixture? (ii) What technique could confirm this?", answer: "i) Pure substances have a sharp, fixed boiling point. The fact that cooking oil boils over a range of temperatures indicates it is a mixture.<br>ii) Fractional distillation." },
+                    {
+                        question: "A set-up shows a salt solution being heated in an evaporating dish over a sand bath. (i) Identify the method. (ii) Give one disadvantage. (iii) Name a mixture that can be separated this way.",
+                        answer: "i) Evaporation to dryness.<br>ii) It uses a lot of fuel/energy. Also, if the salt decomposes upon strong heating (like hydrated salts or some nitrates), this method cannot be used to recover it.<br>iii) A solution of a soluble, heat-stable salt in water, such as sodium chloride solution.",
+                        diagram_alt: "Setup for evaporation, showing a Bunsen burner heating a sand bath, with an evaporating dish on top containing a salt solution."
+                    },
+                    { question: "What is meant by the melting point and boiling point of a substance?", answer: "The melting point is the specific, constant temperature at which a pure solid changes into a liquid. The boiling point is the specific, constant temperature at which a pure liquid changes into a gas at a given pressure." },
+                    {
+                        question: "The apparatus below was used to study the effect of heat on hydrated copper(II) sulphate. (a) What is the role of the ice cold water? (b) Name liquid P. (c) What observation is made in the boiling tube?",
+                        answer: "a) To cool and condense the vapour produced into a liquid.<br>b) Liquid P is water.<br>c) The blue solid (hydrated copper(II) sulphate) turns into a white solid (anhydrous copper(II) sulphate).",
+                        diagram_alt: "Apparatus to heat hydrated copper(II) sulphate. A boiling tube containing the blue crystals is heated, and the vapor is passed into a test tube placed in a beaker of ice-cold water, where liquid P condenses."
+                    },
+                    {
+                        question: "A chromatogram shows blood samples from three athletes (A, B, C) and a known illegal drug. (a) Name the line marked M at the top. (b) Identify the athlete who used the illegal drug.",
+                        answer: "a) The line M is the solvent front.<br>b) Athlete C, as their chromatogram shows a spot that has travelled the same distance as the illegal drug spot.",
+                        diagram_alt: "Paper chromatogram showing the starting line, the solvent front (M), and spots for a known illegal drug and blood samples from athletes A, B, and C."
+                    },
+                    { question: "Classify the following as chemical or physical changes: Neutralization, Sublimation, Fractional distillation, Displacement reaction.", answer: "Neutralization: Chemical change.<br>Sublimation: Physical change.<br>Fractional distillation: Physical change.<br>Displacement reaction: Chemical change." },
+                    { question: "Give two reasons why a luminous flame is not used for heating purposes.", answer: "1. It is not very hot, transferring heat inefficiently.<br>2. It produces soot (unburnt carbon), which coats glassware and makes it dirty." },
+                    { question: "State two criteria for determining the purity of a substance.", answer: "1. A sharp, fixed melting point.<br>2. A sharp, fixed boiling point." },
+                    { question: "A mixture contains ethene, hydrogen, and ammonia gases. Explain how a pure sample of hydrogen gas can be obtained.", answer: "Pass the gas mixture through concentrated sulphuric(VI) acid. The ammonia (a base) and ethene (which can react) will be absorbed by the acid. Hydrogen gas is unreactive and insoluble, and will pass through to be collected." },
+                    {
+                        question: "(a) A chromatogram is run with pure spots A, B, C and a mixture D... (b) Describe how to separate solid ammonium chloride from anhydrous calcium chloride. (c) Describe how to separate immiscible liquids L2 and L4.",
+                        answer: "b) Use sublimation. Heat the solid mixture gently. The ammonium chloride will sublime (turn directly to gas) and can be collected by cooling the gas on a cold surface. The calcium chloride will remain as a solid.<br>c) Use a separating funnel. Pour the mixture into the funnel and allow the layers to separate. Open the tap to run out the lower, denser layer, then collect the upper layer separately.",
+                        diagram_alt: "A paper chromatogram with spots for A, B, C, and mixture D."
+                    },
+                    {
+                        question: "A set-up for fractional distillation is shown to separate ethanol (BP 78°C) and water (BP 100°C). (i) Name apparatus W (condenser). (iv) Which liquid is collected first? Explain. (v) Name the method.",
+                        answer: "i) W is a Liebig condenser.<br>iv) Ethanol is collected first. It has a lower boiling point (78°C) than water, so it will vaporize first, pass into the condenser, and be collected as the distillate.<br>v) The method is fractional distillation.",
+                        diagram_alt: "A complete setup for fractional distillation, including a heating mantle, flask, fractionating column, thermometer, and a Liebig condenser (W)."
+                    },
+                    {
+                        question: "A set-up for evaporation is shown with a missing item. (a) Name the missing apparatus. (b) Give an example of mixture T. (c) Name this method.",
+                        answer: "a) Wire gauze (to support the evaporating dish and distribute heat).<br>b) Salt solution (e.g., sodium chloride solution).<br>c) Evaporation.",
+                        diagram_alt: "Setup for evaporation with a Bunsen burner, tripod stand, and an evaporating dish, with a space for the missing wire gauze."
+                    },
+                    {
+                        question: "A setup shows heating of blue copper(II) sulphate crystals, producing a liquid Y collected in a tube in ice-water. (i) State the observations. (ii) Identify liquid Y and write an equation.",
+                        answer: "i) The blue crystals turn into a white powder, and a colorless liquid condenses in the cooled tube.<br>ii) Liquid Y is water. Equation: CuSO₄·5H₂O(s) → CuSO₄(s) + 5H₂O(l)",
+                        diagram_alt: "Heating of hydrated copper(II) sulphate in a test tube, with the resulting water vapor being condensed to liquid Y in a collection tube submerged in ice-water."
+                    },
+                    {
+                        question: "(a) Chromatography of a flower extract is shown. (i) Name a possible solvent. (ii) Why did the red pigment move furthest? (iii) How to get a sample of yellow pigment? (b) How to separate AlCl₃ and NaCl?",
+                        answer: "a) (i) Ethanol or propanone (acetone). (ii) It is the most soluble in the solvent and/or least adsorbed by the paper. (iii) Cut out the yellow spot. Dissolve the pigment in a small amount of solvent. Filter to remove paper fibers, then evaporate the solvent to leave the yellow pigment.<br>b) Heat the mixture. Aluminium chloride is covalent and sublimes when heated, while sodium chloride is ionic and has a very high melting/boiling point. The AlCl₃ vapor can be collected on a cooled surface.",
+                        diagram_alt: "Chromatogram of a flower extract showing multiple colored pigment spots."
+                    },
+                    { question: "Given a table of solubilities for solids R, S, and V, describe how they can be separated.", answer: "1. Add cold water to the mixture and stir. Solid R will dissolve. <br>2. Filter the mixture. The filtrate contains R, and the residue is a mixture of S and V. <br>3. Evaporate the water from the filtrate to obtain solid R. (Further separation of S and V is not possible with the information given as their solubilities are identical)." },
+                    { question: "Describe how to separate a mixture of lead(II) oxide, ammonium chloride, and sodium chloride.", answer: "1. Heat the mixture gently in an evaporating dish. Ammonium chloride will sublime (turn to gas). Collect it by placing a cold surface (like a watch glass) over the dish. <br>2. Add water to the remaining mixture of PbO and NaCl. Stir well. Sodium chloride will dissolve. <br>3. Filter the mixture. The insoluble lead(II) oxide will be the residue. Wash it with distilled water and dry. <br>4. Evaporate the water from the filtrate to recover solid sodium chloride." },
+                    {
+                        question: "A fractional distillation setup has mistakes. (a) Identify the mistakes. (b) Identify Distillate X.",
+                        answer: "a) Mistakes: 1. The thermometer bulb is positioned too high; it must be level with the side arm to the condenser. 2. A fractionating column is missing, which is essential for separating liquids with close boiling points. 3. The condenser water flow is backwards; water should enter at the bottom and exit at the top for efficient cooling.<br>b) Distillate X is liquid T, as it has the lower boiling point (78°C).",
+                        diagram_alt: "A fractional distillation setup with several errors: a high thermometer, no fractionating column, and reversed water flow in the condenser."
+                    },
+                    {
+                        question: "A diagram shows a paper chromatogram of substances A, B, C, D. (a) Indicate the solvent front. (b) Which substance is pure? (c) If E is a mixture of C and D, show its chromatogram.",
+                        answer: "a) The solvent front is the highest line reached by the solvent on the paper.<br>b) A, B, and C are pure as they each produce only one spot.<br>c) The chromatogram for E would show two separate spots, one at the same height as C and another at the same height as D.",
+                        diagram_alt: "A paper chromatogram with a baseline showing initial spots for substances A, B, C, and D. After development, A, B, and C show single spots at different heights, and D shows two spots."
+                    },
+                    { question: "From a solubility table, explain how to obtain a pure sample of C from a mixture of A, B, and C.", answer: "1. Add ether to the mixture of A, B, and C. Stir and filter. Solid B will dissolve in the ether (filtrate), leaving a residue of A and C.<br>2. Add alcohol to the residue (A+C). Stir and filter. Solid C will dissolve in the alcohol (filtrate), leaving solid A as the residue.<br>3. Evaporate the alcohol from the filtrate to obtain a pure sample of C." },
+                    { question: "State and explain the observations made when iodine crystals are heated in a boiling tube.", answer: "Observation: The shiny, grey-black solid crystals turn directly into a dense purple vapor without melting. The vapor then turns back into shiny black crystals on the cooler, upper parts of the tube.<br>Explanation: Iodine undergoes sublimation upon heating (solid to gas) and deposition upon cooling (gas to solid). This is because the intermolecular forces (van der Waals forces) between iodine molecules are weak and easily overcome by heating." }
+                ]
+            },
+            {
+                id: 'acids_bases_and_indicators',
+                title: '3. Acids, bases and indicators',
+                description: 'Learn about acids, bases, indicators, and their chemical properties.',
+                questions: [
+                    {
+                        question: "The table below shows how indicator J and substance H behave with solutions with different pH values. (a) Identify the indicator J. (b) What behavior is exhibited by substance H?",
+                        answer: "a) Methyl Orange.<br>b) Amphoteric behavior.",
+                        diagram_alt: "Table showing behavior of indicator J (Red at pH=3, Yellow at pH=7, Yellow at pH=11) and substance H (turns litmus Red at pH=3, no effect at pH=7, turns litmus Blue at pH=11)."
+                    },
+                    {
+                        question: "The table below gives observation made when solutions indicated were tested. [Table: A,B,C vs Phenolphthalein and Methyl Orange]. (a) Name an acid substance from the table. (b) How does the pH of 1M KOH compare with 1M aqueous ammonia? Explain.",
+                        answer: "a) Substance B (colorless with phenolphthalein).<br>b) pH of 1M KOH is higher than 1M aq. NH₃. KOH is a strong alkali and fully ionizes producing a higher concentration of OH⁻ ions than the weakly ionizing ammonia.",
+                        diagram_alt: "Table of results for testing solutions A, B, and C with Phenolphthalein and Methyl Orange indicators."
+                    },
+                    {
+                        question: "The information below gives pH values of solutions V, W, X, Y and Z. [V=2.0, W=6.5, X=11.0, Y=14.0, Z=4.5]. (a) Which solution is likely to be: (i) Calcium hydroxide? (ii) Rain water? (b) Which solution would react most vigorously with Zinc carbonate?",
+                        answer: "a) (i) Y or X (strong/weak alkali). (ii) W (slightly acidic).<br>b) Solution V (strongest acid).",
+                        diagram_alt: "List of pH values for five different solutions: V, W, X, Y, and Z."
+                    },
+                    {
+                        question: "The results below were obtained after testing unknown solution K with different indicators. [Indicator: Methyl Orange-Yellow, Phenolphthalein-Pink, Litmus-Blue]. Select the correct pH from the options {2, 7, 10, 14}.",
+                        answer: "pH 10 (weakly alkaline, indicated by yellow methyl orange and pink phenolphthalein).",
+                        diagram_alt: "Table of results for testing solution K with Methyl Orange, Phenolphthalein, and Litmus indicators."
+                    },
+                    {
+                        question: "(a) Complete the table below. [Indicator, Color in Acidic, Color in Basic]. (b) How does the pH value of 0.1 M Potassium hydroxide compare with that of 0.1 M aqueous ammonia? Explain.",
+                        answer: "a) Methyl Orange: Acidic-Red/Pink, Basic-Yellow. Phenolphthalein: Acidic-Colourless, Basic-Pink.<br>b) pH of 0.1 M KOH is higher. KOH is a strong alkali (fully dissociates), while ammonia is a weak alkali (partially dissociates), leading to a lower concentration of OH⁻ ions in ammonia solution.",
+                        diagram_alt: "A table to be completed with the colors of Methyl Orange and Phenolphthalein indicators in acidic and basic solutions."
+                    },
+                    {
+                        question: "A solution of Hydrogen Chloride gas in methylbenzene has no effect on litmus paper, but a solution in water turns blue litmus paper red. Explain.",
+                        answer: "In methylbenzene (a non-polar solvent), HCl exists as molecules and does not ionize to form H⁺ ions which are responsible for acidic properties. In water (a polar solvent), HCl ionizes fully (HCl(g) + H₂O(l) → H₃O⁺(aq) + Cl⁻(aq)) producing H⁺/H₃O⁺ ions that turn blue litmus red."
+                    },
+                    {
+                        question: "The table shows pH values of solutions A, B, C, D. [A=13, B=7, C=1, D=6]. (i) Which solution is strongly acidic? (ii) Which solution is likely to be lemon juice? (iii) Which solution would react with Zinc powder?",
+                        answer: "i) Solution C.<br>ii) Solution D (weakly acidic).<br>iii) Solutions C and D (acids react with reactive metals like Zinc).",
+                        diagram_alt: "Table showing pH values for four solutions: A, B, C, and D."
+                    },
+                    {
+                        question: "Solutions G, H, I, J, K have pH values 1.5, 6.5, 13.0, 7.0, 8.0 respectively. (a) Select the solution that can be used to relieve acid indigestion in the stomach. (b) Select solutions likely to be: (i) Dilute Sulphuric acid (ii) Sodium hydroxide solution.",
+                        answer: "a) Solution K (mildly alkaline).<br>b) (i) Solution G (strongly acidic). (ii) Solution I (strongly alkaline)."
+                    },
+                    {
+                        question: "Solid Copper (II) oxide is a base although it does not turn litmus paper blue. Explain.",
+                        answer: "Copper(II) oxide is a base because it neutralizes acids. However, it is insoluble in water, so it does not produce hydroxide ions (OH⁻) in solution, which are necessary to change the colour of litmus paper."
+                    },
+                    {
+                        question: "Medicines P, Q, R, S have pH values 7.0, 5.0, 8.0, 6.0 respectively. (a) A patient suffering from indigestion is advised not to take S. Explain. (b) State the role of chemistry in the manufacture of drugs.",
+                        answer: "a) Indigestion is often caused by excess stomach acid. Medicine S is acidic (pH=6.0) and would therefore worsen the condition.<br>b) Chemistry is involved in the discovery, synthesis, purification, analysis, formulation, and testing of drugs."
+                    },
+                    {
+                        question: "Explain why very little Carbon (IV) oxide is evolved when dilute Sulphuric (VI) acid is added to Lead (II) carbonate.",
+                        answer: "An insoluble layer of Lead(II) sulphate (PbSO₄) forms on the surface of the Lead(II) carbonate. This layer coats the carbonate and prevents further contact and reaction with the acid."
+                    },
+                    {
+                        question: "State one commercial use of Calcium Oxide.",
+                        answer: "Manufacture of cement; Treatment of acidic soils (liming); Drying agent for basic gases (like ammonia)."
+                    },
+                    {
+                        question: "Solutions P, Q, R have pH 14.0, 6.8, 2.5 respectively. (a) What colour change would occur if phenolphthalein indicator was added to P? (b) Equal moles of solution P and R were mixed. What is the pH of the resulting solution?",
+                        answer: "a) Solution P is strongly alkaline, so phenolphthalein would turn Pink.<br>b) P is a strong base and R is a strong acid. Mixing equal moles results in neutralization, giving a neutral solution with pH 7.0."
+                    },
+                    {
+                        question: "(a) What is meant by the term alkali? (b) Ammonia gas cannot be collected by downward delivery method. Explain.",
+                        answer: "a) An alkali is a base that is soluble in water.<br>b) Ammonia gas is less dense than air. If collected by downward delivery, it would rise and escape from the gas jar."
+                    },
+                    {
+                        question: "(a) Complete the table: [Substance, Effect on Blue Litmus, Effect of adding Indicator W]. (b) Identify indicator W.",
+                        answer: "a) Nitric acid: Turns Red, W is Colourless. Distilled water: Remains Blue, W is Colourless. Calcium Hydroxide: Remains Blue, W is Pink.<br>b) Indicator W is Phenolphthalein.",
+                        diagram_alt: "Table to be completed showing the effect of Nitric acid, Distilled water, and Calcium Hydroxide on blue litmus and an unknown indicator W."
+                    },
+                    {
+                        question: "Solutions K, L, M have pH values 1.5, 7.0, 14.0 respectively. (i) Select a pair that would react to form a solution of pH 7. (ii) Identify two solutions that would react with aluminium hydroxide. Explain.",
+                        answer: "i) K (strong acid) and M (strong base).<br>ii) K and M. Aluminium hydroxide is amphoteric, meaning it reacts with both strong acids (K) and strong bases (M)."
+                    },
+                    {
+                        question: "A chromatogram of substance W, Y, Z is shown. Z separated into two spots matching W and Y. (a) Give two limitations of using flower extracts as indicators. (b) Identify the substances in mixture Z.",
+                        answer: "a) They do not give consistent colours/results; They expire quickly/have a short shelf-life.<br>b) Mixture Z contains substances W and Y.",
+                        diagram_alt: "Chromatogram of substances W, Y, and Z, where Z separates into two spots corresponding to W and Y."
+                    },
+                    {
+                        question: "When Sodium hydrogen carbonate solution is applied on the area stung by a bee, the irritation disappears after a short while. Explain.",
+                        answer: "A bee sting contains acidic substances (like methanoic acid). Sodium hydrogen carbonate is a weak base which neutralizes the acid, relieving the irritation."
+                    },
+                    {
+                        question: "Lemon juice was added dropwise to Sodium hydrogen carbonate solution in a test tube. (a) Explain the observation made. (b) What would be observed if lemon juice was added to copper turnings?",
+                        answer: "a) Effervescence/fizzing occurs. Lemon juice contains citric acid which reacts with the carbonate to produce Carbon(IV) oxide gas.<br>b) No observable reaction. Copper is unreactive towards weak, non-oxidizing acids like citric acid."
+                    },
+                    {
+                        question: "Use the list of salts: NH₄Cl, CuSO₄, NaCl, PbCl₂, Ca(HCO₃)₂. Select: (a) A salt which forms a precipitate that dissolves on heating. (b) A salt whose solubility decreases with temperature. (c) A salt solution which is acidic.",
+                        answer: "a) PbCl₂ (Lead(II) chloride is sparingly soluble in cold water but more soluble in hot water).<br>b) None listed typically show a decrease (usually salts like CaSO₄ or Ce₂(SO₄)₃). NaCl shows very little change.<br>c) NH₄Cl or CuSO₄ (solutions are acidic due to hydrolysis)."
+                    }
+                ]
+            },
+            {
+                id: 'air_and_combustion',
+                title: '4. Air and Combustion',
+                description: 'Learn about the composition of air, the process of combustion, and related reactions.',
+                questions: [
+                    {
+                        question: "The set-up below was used to prepare a sample of oxygen gas. (i) Complete the diagram to show how Oxygen can be collected. (ii) Write a chemical equation of the reaction to produce oxygen.",
+                        answer: "i) The diagram should show gas collection over water, as oxygen is only slightly soluble.<br>ii) 2H₂O₂(aq) --(MnO₂)--> 2H₂O(l) + O₂(g)",
+                        diagram_alt: "A diagram of an experimental setup for preparing oxygen gas, with a space to show the collection method."
+                    },
+                    {
+                        question: "Air was passed through several reagents: Conc. NaOH, then excess heated copper, then excess heated magnesium. (a) Write an equation for the reaction in the chamber with magnesium powder. (b) Name one gas that escapes and give a reason.",
+                        answer: "a) 3Mg(s) + N₂(g) ⟶ Mg₃N₂(s)<br>b) Argon escapes. It is a noble gas and is inert (unreactive), so it doesn't react with the heated magnesium."
+                    },
+                    {
+                        question: "(a) What is rust? (b) Give two methods to prevent rusting. (c) Name one substance that speeds up rusting.",
+                        answer: "a) Rust is hydrated iron(III) oxide.<br>b) Painting, oiling/greasing, galvanizing, electroplating, sacrificial protection.<br>c) Salt (e.g., sodium chloride), or acidic substances."
+                    },
+                    {
+                        question: "3.0g of Mg and 8.0g of Cu were burnt separately in equal volumes of air. (a) State and explain where there was a greater change in volume of air. (b) Write an equation for the reaction between dilute sulphuric acid and the product of burnt copper.",
+                        answer: "a) There was a greater change in volume with magnesium. Moles of Cu = 8.0/64 = 0.125 mol. Moles of Mg = 3.0/24 = 0.125 mol. While copper reacts only with oxygen, magnesium is more reactive and reacts with both oxygen and nitrogen in the air, thus consuming a greater volume of the air.<br>b) CuO(s) + H₂SO₄(aq) ⟶ CuSO₄(aq) + H₂O(l)"
+                    },
+                    {
+                        question: "In the fractional distillation of air: (a) Identify the substance removed at the filtration stage. (b) Explain why CO₂ and water are removed before liquefaction. (c) Identify the component collected at -186°C.",
+                        answer: "a) Dust particles.<br>b) They would solidify at the low temperatures used for liquefaction and block the pipes.<br>c) Argon."
+                    },
+                    {
+                        question: "The set-up shows moist iron wool in an inverted test tube over water. State and explain two observations made.",
+                        answer: "1. The water level rises inside the test tube. This is because the oxygen in the air (the active part) is used up during the rusting of the iron wool, creating a partial vacuum.<br>2. The moist iron wool turns from grey to reddish-brown. This is the formation of hydrated iron(III) oxide, which is rust.",
+                        diagram_alt: "An experiment showing moist iron wool inside an inverted test tube placed in a beaker of water."
+                    },
+                    {
+                        question: "Iron was put in contact with (i) copper and (ii) zinc. (a) State where rusting occurred. (b) Explain your answer.",
+                        answer: "a) Rusting occurred in set-up (i) but not in (ii).<br>b) In (i), iron is more reactive than copper, so iron corrodes preferentially. In (ii), zinc is more reactive than iron, so zinc corrodes instead of the iron, acting as a sacrificial anode."
+                    },
+                    {
+                        question: "2.4g of Mg was burnt completely in oxygen, and the product weighed 4.0g. (a) Why clean the Mg ribbon? (b) What was observed? (c) Why the mass increase? (d) Write the equation. (e) What happens when the product is tested with litmus after dissolving in water?",
+                        answer: "a) To remove the thin, unreactive layer of magnesium oxide on its surface.<br>b) The magnesium burned with a bright white flame, producing a white solid ash.<br>c) The mass increased because magnesium combined with oxygen from the air.<br>d) 2Mg(s) + O₂(g) ⟶ 2MgO(s).<br>e) Red litmus paper turns blue; blue litmus paper remains blue. MgO reacts slightly with water to form Mg(OH)₂, which is an alkaline solution."
+                    },
+                    {
+                        question: "Damp iron filings in an inverted gas jar over water. (a) Why were the filings moistened? (b) State and explain observations after three days. (c) State two conclusions.",
+                        answer: "a) Both water and oxygen are required for rusting to occur.<br>b) The water level inside the gas jar rises to fill the space previously occupied by oxygen, which was consumed during rusting. The iron filings turn reddish-brown.<br>c) 1. Air contains an active component (oxygen) necessary for rusting. 2. Air contains an inactive component that does not take part in rusting."
+                    },
+                    {
+                        question: "Gas F is produced from sodium peroxide and water and collected over water. (i) Name gas F. (ii) Why is the final solution a strong base? (iii) What property allows this collection method?",
+                        answer: "i) Gas F is Oxygen.<br>ii) The reaction produces sodium hydroxide (NaOH), which is a strong base. 2Na₂O₂(s) + 2H₂O(l) ⟶ 4NaOH(aq) + O₂(g).<br>iii) The gas is insoluble or only slightly soluble in water."
+                    },
+                    {
+                        question: "Burning phosphorous in a gas jar over water. (i) State two observations. (ii) Write two equations. (iii) Why is the water rise greater with Mg? (iv) What happens to litmus in the water after each experiment (P vs Mg)?",
+                        answer: "i) Dense white smoke (P₂O₅) is produced. The water level rises in the gas jar.<br>ii) P₄(s) + 5O₂(g) ⟶ 2P₂O₅(s); and P₂O₅(s) + 3H₂O(l) ⟶ 2H₃PO₄(aq).<br>iii) Magnesium is more reactive and reacts with both oxygen and nitrogen, using up a larger volume of gas from the air.<br>iv) Phosphorous experiment: Blue litmus turns red because the P₂O₅ forms acidic phosphoric acid. Magnesium experiment: Red litmus turns blue because MgO forms alkaline Mg(OH)₂ and Mg₃N₂ forms ammonia."
+                    },
+                    {
+                        question: "Mg was burnt in air, forming MgO and Mg₃N₂. (i) Write an equation for magnesium nitride formation. (ii) What is observed and explained when water is added? (iii) What is observed with blue litmus?",
+                        answer: "i) 3Mg(s) + N₂(g) ⟶ Mg₃N₂(s).<br>ii) A gas with a pungent, choking smell is produced. Magnesium nitride reacts with water to form ammonia gas.<br>iii) It remains blue. The ammonia produced is an alkaline gas."
+                    },
+                    {
+                        question: "An experiment to find the percentage of active air used substance M. (a) Identify M and its suitability. (b) Write the reaction equation. (c) Write an expression for % active air. (d) Name the active part of air.",
+                        answer: "a) i. M is Phosphorous. ii. It reacts readily with oxygen upon heating and is a solid, making it easy to handle.<br>b) 4P(s) + 5O₂(g) ⟶ 2P₂O₅(s).<br>c) % Active Air = (Initial volume of air - Final volume of air) / Initial volume of air x 100.<br>d) The active part of air is oxygen."
+                    },
+                    {
+                        question: "A piece of phosphorous was burnt in excess air. The product was shaken with hot water to make a solution. i) Write an equation for the burning of phosphorus. ii) The solution had a pH of 2. Explain.",
+                        answer: "i) P₄(s) + 5O₂(g) ⟶ 2P₂O₅(s).<br>ii) The product, phosphorus(V) oxide, is an acidic oxide. It dissolves in water to form phosphoric(V) acid, which is a strong acid and thus has a low pH."
+                    },
+                    {
+                        question: "Iron nails are left in a sealed test tube connected by a tube to a beaker of water. (a) State two observations after one week and explain. (b) Write the equation for the reaction.",
+                        answer: "a) 1. The iron nails turn reddish-brown. 2. The water level in the delivery tube rises. Explanation: The nails rust, using up the oxygen inside the test tube. This creates a partial vacuum, causing external atmospheric pressure to push water up the tube.<br>b) 4Fe(s) + 3O₂(g) + nH₂O(l) ⟶ 2Fe₂O₃·nH₂O(s).",
+                        diagram_alt: "Experiment showing iron nails in a sealed test tube, with a delivery tube leading into a beaker of water."
+                    },
+                    {
+                        question: "(a) Write equations to produce FeO and Fe₃O₄. (b) Write an ionic equation for the reaction between Fe₃O₄ and a dilute acid.",
+                        answer: "a) To produce FeO: FeCO₃(s) --(heat)--> FeO(s) + CO₂(g). To produce Fe₃O₄: 3Fe(s) + 4H₂O(g) --(steam)--> Fe₃O₄(s) + 4H₂(g).<br>b) Fe₃O₄(s) + 8H⁺(aq) ⟶ Fe²⁺(aq) + 2Fe³⁺(aq) + 4H₂O(l)."
+                    },
+                    {
+                        question: "From the list MgO, N₂O, K₂O, CaO, Al₂O₃, select: (a) A neutral oxide. (b) A highly water-soluble basic oxide. (c) An amphoteric oxide.",
+                        answer: "a) N₂O (Nitrogen(I) oxide).<br>b) K₂O (Potassium oxide).<br>c) Al₂O₃ (Aluminium oxide)."
+                    },
+                    {
+                        question: "The diagram shows the preparation of oxygen from sodium peroxide and substance X. (a) Name substance X. (b) Write the equation for the reaction.",
+                        answer: "a) Substance X is water.<br>b) 2Na₂O₂(s) + 2H₂O(l) ⟶ 4NaOH(aq) + O₂(g).",
+                        diagram_alt: "Setup for preparing oxygen, showing a dropping funnel adding substance X to sodium peroxide in a flask."
+                    }
+                ]
+            },
+            {
+                id: 'water_and_hydrogen',
+                title: '5. Water and Hydrogen',
+                description: 'Explore the properties of water and the preparation and reactions of hydrogen gas.',
+                questions: [
+                    {
+                        question: "(a) Hydrogen can reduce copper(II) Oxide but not aluminium oxide. Explain. (b) When water reacts with potassium metal, the hydrogen produced ignites explosively. (i) What causes this ignition? (ii) Write an equation for the ignition.",
+                        answer: "a) Aluminium is more reactive than hydrogen and is placed above it in the reactivity series, while copper is less reactive than hydrogen.<br>b) (i) The reaction is highly exothermic, producing a large amount of heat that ignites the hydrogen gas in the presence of air.<br>(ii) 2H₂(g) + O₂(g) ⟶ 2H₂O(g)"
+                    },
+                    {
+                        question: "In an experiment, dry hydrogen gas was passed over hot copper(II) oxide. (a) Complete the diagram to show how the other product, substance R, could be collected. (b) Describe how copper could be obtained from a mixture containing copper(II) oxide.",
+                        answer: "a) The diagram should show a U-tube immersed in a beaker of ice-cold water, connected to the outlet of the combustion tube to condense substance R (water).<br>b) Add dilute sulphuric acid to the mixture. The copper(II) oxide will react and dissolve, while copper will not. Filter the mixture, wash the residue (copper) with distilled water, and then dry it.",
+                        diagram_alt: "Diagram showing a U-tube in ice-cold water for condensing a product."
+                    },
+                    {
+                        question: "A setup was used to react calcium metal with water, and the gas produced was passed over solid X, then ignited. (a) Identify solid X and its purpose. (b) Write the chemical equation for the reaction that produces the flame.",
+                        answer: "a) Solid X is anhydrous calcium chloride. Its purpose is to dry the hydrogen gas.<br>b) 2H₂(g) + O₂(g) ⟶ 2H₂O(g)"
+                    },
+                    {
+                        question: "Gas P was passed over heated magnesium ribbon, and hydrogen gas was collected. (i) Name gas P. (ii) Write the equation of the reaction in the combustion tube. (iii) State one precaution necessary at the end of this experiment.",
+                        answer: "i) Gas P is steam.<br>ii) Mg(s) + H₂O(g) ⟶ MgO(s) + H₂(g).<br>iii) Continue passing steam through the tube until the apparatus has cooled to prevent the hot magnesium from being re-oxidized by air."
+                    },
+                    {
+                        question: "Hydrogen is burnt and the product, liquid Y, is collected by cooling. (a) Write the equation for the formation of liquid Y. (b) Give a chemical test for liquid Y.",
+                        answer: "a) 2H₂(g) + O₂(g) ⟶ 2H₂O(l).<br>b) Test: Add a sample of liquid Y to anhydrous white copper(II) sulphate. Result: The white solid turns blue. OR Test: Dip anhydrous blue cobalt(II) chloride paper into liquid Y. Result: The blue paper turns pink."
+                    },
+                    {
+                        question: "A setup to prepare a gas involves heating zinc granules after heating wet sand. (a) Complete the diagram for the gas collection. (b) Why heat the wet sand before the zinc?",
+                        answer: "a) The diagram should show collection of the gas over water in an inverted gas jar or measuring cylinder.<br>b) To generate steam from the wet sand first. The steam then displaces the air from the apparatus before the zinc is heated to react with the steam. This prevents a potential explosion between hydrogen and air.",
+                        diagram_alt: "Diagram showing gas collection over water."
+                    },
+                    {
+                        question: "Steam is passed over iron powder in a combustion tube. (a) Which part should be heated first, the water (N) or the iron (M)? Explain. (b) Write the chemical equation for the reaction.",
+                        answer: "a) N (the water/steam generator) should be heated first. This is to ensure that steam drives all the air out of the apparatus before the iron is heated, preventing re-oxidation of the products.<br>b) 3Fe(s) + 4H₂O(g) ⟶ Fe₃O₄(s) + 4H₂(g)."
+                    },
+                    {
+                        question: "A setup for electrolysis of a molten substance is shown. (a) Complete the circuit. (b) Write the half-equation at the cathode. (c) Show the direction of electron flow.",
+                        answer: "a) A DC power supply (cell or battery) should be drawn in the gap, connecting the electrodes.<br>b) If the substance is molten lead(II) bromide: Pb²⁺(l) + 2e⁻ ⟶ Pb(s).<br>c) An arrow should be drawn on the external wire showing electrons flowing from the anode to the cathode.",
+                        diagram_alt: "A basic electrolysis circuit diagram with a gap for the power supply."
+                    },
+                    {
+                        question: "Hydrogen preparation and properties. (a) Write the equation for reacting zinc with dilute HCl. (b) Name a drying agent for hydrogen. (c) Why can't copper be used? (e) Give two uses of hydrogen. (h) How is hydrogen used in margarine manufacture?",
+                        answer: "a) Zn(s) + 2HCl(aq) ⟶ ZnCl₂(aq) + H₂(g).<br>b) Anhydrous calcium chloride or concentrated sulphuric acid.<br>c) Copper is less reactive than hydrogen and cannot displace it from an acid.<br>e) Filling weather balloons; manufacture of ammonia in the Haber process.<br>h) It is used in hydrogenation to catalytically add across the double bonds in unsaturated vegetable oils, converting them into saturated solid fats (margarine)."
+                    },
+                    {
+                        question: "A setup investigates the properties of hydrogen passed over copper(II) oxide. (i) What should be done for the reaction to occur? (iii) Write the reaction equation. (v) What property of hydrogen is being investigated?",
+                        answer: "i) The copper(II) oxide must be heated.<br>iii) CuO(s) + H₂(g) ⟶ Cu(s) + H₂O(l).<br>v) Its property as a reducing agent."
+                    },
+                    {
+                        question: "Gas K is produced from water and calcium metal. (a) Name gas K. (b) Why is the final solution a weak base?",
+                        answer: "a) Gas K is hydrogen gas.<br>b) The reaction produces calcium hydroxide, which is only slightly soluble in water. This results in a low concentration of hydroxide ions (OH⁻), making the solution a weak base (or weak alkali)."
+                    }
+                ]
+            },
+            {
+                id: 'structure_and_periodic_table',
+                title: '6. Structure of the Atom and the Periodic Table',
+                description: 'Understand atomic structure, electron configurations, and the organization of the periodic table.',
+                questions: [
+                    {
+                        question: "An unknown mass of anhydrous sodium carbonate was dissolved to make 250cm³ of solution. 25cm³ of this solution neutralized 20cm³ of 0.25M nitric acid. Calculate the mass of sodium carbonate used.",
+                        answer: "Equation: Na₂CO₃ + 2HNO₃ ⟶ 2NaNO₃ + CO₂ + H₂O.<br>Moles of HNO₃ used = (20/1000) * 0.25 = 0.005 mol.<br>Mole ratio Na₂CO₃:HNO₃ is 1:2.<br>Moles of Na₂CO₃ in 25cm³ = 0.005 / 2 = 0.0025 mol.<br>Moles of Na₂CO₃ in 250cm³ = 0.0025 * 10 = 0.025 mol.<br>Mass of Na₂CO₃ = 0.025 mol * 106 g/mol = 2.65g."
+                    },
+                    {
+                        question: "Element A has atomic mass 23 and 12 neutrons. Element B has atomic mass 7 and 4 neutrons. (a) Write the electronic arrangement of A and B. (b) Which element has higher ionization energy? Explain.",
+                        answer: "a) Protons in A = 23 - 12 = 11. Arrangement: 2.8.1. Protons in B = 7 - 4 = 3. Arrangement: 2.1.<br>b) B has higher ionization energy. Its outermost electron is in the first energy level, closer to the nucleus, and thus held by a stronger force of attraction, making it more difficult to remove compared to A's outermost electron in the third energy level."
+                    },
+                    {
+                        question: "Calculate the relative atomic mass of element M, given the following isotopic data: M₁ (mass 62.93, abundance 69.09%) and M₂ (mass 64.93, abundance 30.91%).",
+                        answer: "R.A.M = [(62.93 * 69.09) + (64.93 * 30.91)] / 100<br>= [4347.83 + 2006.99] / 100<br>= 6354.82 / 100 = 63.55"
+                    },
+                    {
+                        question: "(a) Element V has two isotopes: ⅔ are ³³V and ⅓ is ³⁰V. What is the R.A.M of V? (b) Isotope ⁵⁷C contains 31 neutrons. Find the number of protons in isotope ⁵⁶B.",
+                        answer: "a) R.A.M = (⅔ * 33) + (⅓ * 30) = 22 + 10 = 32.<br>b) Protons in C = 57 - 31 = 26. Since isotopes have the same number of protons, B also has 26 protons."
+                    },
+                    {
+                        question: "An element M has two isotopes, ⁶³M and ⁶⁵M. If the R.A.M is 63.55, calculate the percentage abundance of each isotope.",
+                        answer: "Let abundance of ⁶³M be x%. Then abundance of ⁶⁵M is (100-x)%.<br>[(63 * x) + (65 * (100-x))] / 100 = 63.55<br>63x + 6500 - 65x = 6355<br>6500 - 2x = 6355<br>2x = 145<br>x = 72.5%<br>Abundance of ⁶³M = 72.5%, Abundance of ⁶⁵M = 27.5%."
+                    },
+                    {
+                        question: "An oxide of element G has the formula G₂O₃. (a) State the valency of G. (b) In which group of the periodic table is G?",
+                        answer: "a) Valency is 3.<br>b) Group 13 (or III)."
+                    },
+                    {
+                        question: "Ion T⁺ has e-config 2.8 and 12 neutrons. Ion Z²⁻ has e-config 2.8.8 and 16 neutrons. (a) How many protons in element T and Z? (b) Determine the formula mass of the compound formed. (c) State two conditions for the compound to conduct electricity.",
+                        answer: "a) T has 11 protons. Z has 16 protons.<br>b) Formula is T₂Z. Formula Mass = (23 * 2) + 32 = 46 + 32 = 78.<br>c) 1. In the molten state. 2. When dissolved in an aqueous solution."
+                    },
+                    {
+                        question: "Carbon and silicon are in the same group. CO₂ is a gas while SiO₂ is a solid with a high melting point. Explain.",
+                        answer: "Silicon(IV) Oxide (SiO₂) has a giant covalent/atomic structure with strong covalent bonds throughout the lattice, requiring much energy to break. Carbon(IV) Oxide (CO₂) has a simple molecular structure with weak van der Waals forces between molecules, which require little energy to overcome."
+                    },
+                    {
+                        question: "An ion of oxygen is larger than an oxygen atom. Explain.",
+                        answer: "The oxide ion (O²⁻) has gained two electrons. The nuclear charge (8 protons) is now attracting more electrons (10), and the increased electron-electron repulsion causes the electron cloud to expand, making the ion larger."
+                    },
+                    {
+                        question: "How would you distinguish between black solids of Copper(II) oxide and charcoal?",
+                        answer: "Add a dilute mineral acid (like HCl) to each. The Copper(II) oxide will dissolve to form a blue solution, while the charcoal (carbon) will not react."
+                    },
+                    {
+                        question: "Element X is in Period 3, Group 14. A sample has 90% of ²⁸X and the R.A.M is 28.3. Find the number of neutrons in the other isotope, QX.",
+                        answer: "Let the mass of the other isotope be Q.<br>[(90 * 28) + (10 * Q)] / 100 = 28.3<br>2520 + 10Q = 2830<br>10Q = 310<br>Q = 31.<br>Atomic number of X (Group 14, Period 3) is 14. <br>Number of neutrons = Mass number - Atomic number = 31 - 14 = 17."
+                    },
+                    {
+                        question: "Elements L₁, L₂, and L₃ have electron arrangements 2.8.2, 2.8.1, and 2.8.3 respectively. L₃ has the highest electrical conductivity. Explain.",
+                        answer: "Electrical conductivity in metals depends on the number of delocalized valence electrons. L₃ (Aluminium) has three delocalized electrons per atom, which is more than L₁ (Magnesium, 2) and L₂ (Sodium, 1). More mobile charge carriers result in higher conductivity."
+                    },
+                    {
+                        question: "Define the term melting point of a substance.",
+                        answer: "The melting point is the constant temperature at which a pure solid changes to a liquid."
+                    },
+                    {
+                        question: "Given a table with elements P, Q, R, S, T. (a) Which two letters represent the same element? Give a reason. (b) Give the number of neutrons in an atom of element R.",
+                        answer: "a) P and S are the same element. They both have the same atomic number (5).<br>b) Neutrons in R = Mass number - Atomic number = 7 - 3 = 4.",
+                        diagram_alt: "A table showing elements P, Q, R, S, T with their atomic numbers, mass numbers, and number of electrons."
+                    },
+                    {
+                        question: "Given elements A(12), B(13), C(14), D(15), E(16). (a) Which is a metal forming an ion with the smallest radius? Explain. (b) Which is a non-metal with the largest atomic size? Explain.",
+                        answer: "a) Element B (Aluminium). It forms an ion B³⁺. Both A²⁺ and B³⁺ have the same electron configuration (2.8), but B³⁺ has a higher nuclear charge (13 protons vs 12 for A²⁺), pulling the electrons closer, resulting in a smaller ionic radius.<br>b) Element D (Phosphorus). Non-metals are C, D, E. Atomic radius decreases across a period, so C has the largest radius among these non-metals."
+                    },
+                    {
+                        question: "A grid of the periodic table is shown. (a) Formula of compound between C and A? (c) Element Q (atomic no. 15) position? (d) Compare atomic radii of C and F; C and D. (e) Bond type between D and A?",
+                        answer: "a) C is Group 1, A is Group 16. Formula: C₂A.<br>c) Q (2.8.5) is in Period 3, Group 15.<br>d) (i) F has more energy levels than C, so F has a larger atomic radius. (ii) D has a greater nuclear charge than C (in the same period), so D has a smaller atomic radius.<br>e) Ionic/Electrovalent bond.",
+                        diagram_alt: "A grid representing a section of the periodic table with letters in place of element symbols."
+                    },
+                    {
+                        question: "A flow chart shows the industrial manufacture of Nitric (V) acid. (a) Identify substances B, C, E, F. (b) What happens in the catalytic chamber?",
+                        answer: "a) B: Ammonia, C: Nitrogen(II) oxide, E: Water, F: Unreacted gases.<br>b) A mixture of ammonia and air is passed over a heated catalyst (platinum-rhodium) where ammonia is oxidized to nitrogen(II) oxide.",
+                        diagram_alt: "A flow chart illustrating the Ostwald process for manufacturing Nitric Acid."
+                    },
+                    {
+                        question: "A table of particles A-F is given. (a) Choose letters representing: (i) a metal atom, (ii) a neutral non-metal atom, (iii) a noble gas atom, (iv) isotopes, (v) a cation.",
+                        answer: "a) (i) C (12p, 12e), (ii) D (17p, 17e), (iii) F (18p, 18e), (iv) D and E (same protons, different neutrons), (v) A (3p, 2e).",
+                        diagram_alt: "A table showing the number of protons, neutrons, and electrons for particles A through F."
+                    },
+                    {
+                        question: "A table of particles P-T is given. (ii) Choose the most reactive metal. Explain. (iii) Which element is most electronegative? Explain. (iv) Draw bonding in the chloride of Q.",
+                        answer: "(ii) R is the most reactive metal. It is in Group 1 and has the largest atomic radius, so it loses its single valence electron most easily.<br>(iii) S is the most electronegative. It is a halogen with the smallest atomic radius among the non-metals listed, so it attracts electrons most strongly.<br>(iv) [Image Placeholder: Dot-and-cross diagram showing a Q²⁺ ion and two Cl⁻ ions, indicating transfer of two electrons from Q to two Cl atoms].",
+                        diagram_alt: "A dot-and-cross diagram illustrating the ionic bonding in the chloride of Q."
+                    },
+                    {
+                        question: "(a) Find the oxidation number of P in H₃PO₃. (b) In the reaction Mg(s) + 2H₂O(l) → Mg(OH)₂(aq) + H₂(g), which species is oxidized? Explain.",
+                        answer: "a) 3(+1) + P + 3(-2) = 0.  3 + P - 6 = 0. P = +3.<br>b) Magnesium (Mg) is oxidized. Its oxidation state increases from 0 in the element to +2 in Mg(OH)₂."
+                    },
+                    {
+                        question: "A periodic table grid is given. (b) Name the family for P and Q. (c) Formula for P and V? (d) Compare melting points of Q and S. (e) Identify an amphoteric element.",
+                        answer: "b) Alkaline earth metals.<br>c) PV₂.<br>d) Q has a higher melting point. It has a giant metallic structure with stronger metallic bonds (more delocalized electrons) than S, which has a simple molecular structure with weak van der Waals forces.<br>e) R (often represents Aluminium or a similar element).",
+                        diagram_alt: "A grid representing a section of the periodic table with letters in place of element symbols."
+                    },
+                    {
+                        question: "A periodic table grid is given. (ii) Which metal is most reactive? Explain. (iii) Name the family of X and T. (vi) Formula of compound between R and Z.",
+                        answer: "(ii) E is the most reactive metal. It is in Group 1 and further down the group than Q, meaning it has a larger atomic radius and loses its outer electron more readily.<br>(iii) Halogens.<br>(vi) RZ₂.",
+                        diagram_alt: "A grid representing a section of the periodic table with letters in place of element symbols."
+                    },
+                    {
+                        question: "A periodic table grid is given. (i) Which is the most reactive non-metal? Explain. (ii) Name the family of T and Q. (iv) Name the bond and structure between R and K.",
+                        answer: "i) T. Reactivity for non-metals increases up the group, and T is at the top of its group.<br>ii) Halogens.<br>iv) Bond: Ionic/Electrovalent. Structure: Giant ionic lattice.",
+                        diagram_alt: "A grid representing a section of the periodic table with letters in place of element symbols."
+                    },
+                    {
+                        question: "A table of elements A-H is given. (i) Explain the trend in melting point from A to C. (ii) Why is D's melting point the highest? (iv) Formula for C and sulphate ions? (vi) Nature of oxides of C and F?",
+                        answer: "i) Melting point increases from A(Na) to C(Al) due to an increasing number of delocalized electrons, which leads to stronger metallic bonds.<br>ii) D (Silicon) has a giant atomic structure with very strong covalent bonds that require a large amount of energy to break.<br>iv) C forms a C³⁺ ion. The formula is C₂(SO₄)₃.<br>vi) Oxide of C (Al₂O₃) is amphoteric. Oxide of F (SO₂/SO₃) is acidic.",
+                        diagram_alt: "A table of elements from Period 3 (A-H) showing their melting points."
+                    },
+                    {
+                        question: "An element W has an atomic number of 13. (a) Write the electronic configuration of its most stable ion. (b) Write the formula of its oxide.",
+                        answer: "a) The element is Aluminium (2.8.3). It forms the ion W³⁺ with configuration 2.8.<br>b) W₂O₃."
+                    },
+                    {
+                        question: "Identify the particles that facilitate electric conductivity in: (i) Sodium metal (ii) Sodium Chloride solution (iii) Molten Lead Bromide.",
+                        answer: "i) Delocalized electrons.<br>ii) Mobile ions (Na⁺ and Cl⁻).<br>iii) Mobile ions (Pb²⁺ and Br⁻)."
+                    },
+                    {
+                        question: "Compare with a reason the atomic radius of Sodium to that of Aluminum.",
+                        answer: "Sodium has a larger atomic radius than aluminium. Both are in the same period, but aluminium has a greater nuclear charge (13 protons vs. 11 for sodium). This stronger positive charge pulls the electron shells closer to the nucleus."
+                    },
+                    {
+                        question: "Given ion data for P³⁻, Q⁺, and R²⁺. (a) Write the electron arrangement of element P. (b) Give the group and period for Q and R.",
+                        answer: "a) Ion P³⁻ has 10 electrons (config 2.8). Element P must have 7 protons (2.5).<br>b) Element Q (19 protons) is 2.8.8.1: Group 1, Period 4. Element R (12 protons) is 2.8.2: Group 2, Period 3."
+                    },
+                    {
+                        question: "Ethanol is a liquid at room temperature but does not conduct electricity. Explain.",
+                        answer: "Ethanol consists of neutral molecules. It does not have mobile ions or delocalized electrons to carry an electric current."
+                    },
+                    {
+                        question: "Given electron configurations for P(2.8.6), Q(2.8.2), R(2.8.1), S(2.8.8). Select the element which forms (i) a double charged ion (ii) a soluble carbonate.",
+                        answer: "i) Q (forms Q²⁺).<br>ii) R (Group 1 carbonates are soluble)."
+                    },
+                    {
+                        question: "A table gives data for elements K, L, M, N. (a) Which two have similar properties? Explain. (b) Formula of the oxide of L? (c) Which is a non-metal? Explain.",
+                        answer: "a) K and N. They are both in Group 2 (2 valence electrons).<br>b) L is in Group 17. Formula: L₂O₇.<br>c) L is a non-metal. It is in Group 17 and reacts by gaining an electron, and its ionic radius is larger than its atomic radius.",
+                        diagram_alt: "A table of data for elements K, L, M, N, including atomic number and ionic radius."
+                    },
+                    {
+                        question: "A table gives data for elements A, D, E, G, J. (i) Write the formula of the compound formed when J combines with G. (b) Explain why the melting point of oxide E is higher than oxide G.",
+                        answer: "i) J is in Group 2 (forms J²⁺). G is in Group 15 (forms G³⁻). Formula: J₃G₂.<br>b) The oxide of E (E₂O₃) likely has a giant ionic structure with strong electrostatic forces, requiring high energy to melt. The oxide of G (G₂O₅) likely has a simple molecular structure with weak intermolecular forces, requiring less energy to melt.",
+                        diagram_alt: "A table of data for elements A, D, E, G, J, including their group number and the melting point of their oxides."
+                    }
+                ]
+            },
+            {
+                id: 'chemical_families',
+                title: '7. Chemical families',
+                description: 'Learn about the properties and trends of different chemical families in the periodic table.',
+                questions: [
+                    {
+                        question: "Study the information in the table below and answer the questions that follow. (a) Would these form part of a metallic or a non-metallic group? Explain. (b) Suggest an element in the table above likely to be the most reactive. Explain.",
+                        answer: "a) This is a non-metallic group. The ionic radius is larger than the atomic radius, which occurs when atoms gain electrons to form negative ions.<br>b) Y is likely the most reactive. In this non-metallic group, reactivity increases down the group as the atomic radius increases. Y has the largest atomic radius, meaning it can gain an electron most easily.",
+                        diagram_alt: "Table with atomic and ionic radii for elements W, X, Y, Z."
+                    },
+                    {
+                        question: "State the reason for using Argon in electric light bulbs.",
+                        answer: "To prevent the hot tungsten filament from burning out (oxidizing). Argon is an inert gas and provides an atmosphere in which burning cannot occur."
+                    },
+                    {
+                        question: "For elements X, Y, Z in the same group: (a) What is the general name for the group? (b) Select two elements which are coloured gases. (c) Explain why Z has the highest boiling point. (d) Write an equation for the reaction of element Z with iron. (e) What happens when element Y is dissolved in water and tested with litmus?",
+                        answer: "a) Halogens.<br>b) X (Fluorine) and Y (Chlorine).<br>c) Z has the largest atoms/molecules. The strength of the intermolecular van der Waals forces increases with increasing molecular size, so more energy is needed to separate the molecules of Z.<br>d) 2Fe(s) + 3Z₂(g) ⟶ 2FeZ₃(s).<br>e) The blue litmus paper turns red and is then bleached (turns white). Y dissolves and reacts with water to form an acidic solution and a bleaching agent."
+                    },
+                    {
+                        question: "For group X (valency 2) and Y (valency 1) elements: (i) Explain why atomic radius increases down each group. (ii) Explain the difference in atomic and ionic radii for group X. (iii) Why is the atomic radius of C (Group X) greater than G (Group Y) in the same period? (iv) Formula for B and F? (v) What type of bonding? (vi) Order of reactivity for Group Y?",
+                        answer: "(i) The number of occupied energy levels increases down the group.<br>(ii) Group X elements (metals) lose their outermost energy level to form positive ions, so the ionic radius is smaller than the atomic radius.<br>(iii) Across a period from left to right, the nuclear charge increases, pulling the electron shells closer and decreasing the atomic radius. C is to the left of G.<br>(iv) BF₂.<br>(v) Ionic/electrovalent bond, formed by the transfer of electrons from metal B to non-metal F.<br>(vi) Least reactive to most reactive: G, F, E. For these non-metals, reactivity increases up the group as atomic size decreases, making it easier to attract an electron."
+                    },
+                    {
+                        question: "The information in the table below relates to elements in the same group. Which element has the highest ionization energy? Explain.",
+                        answer: "Element R has the highest ionization energy. Ionization energy increases as atomic size decreases. Since R has the smallest atomic size (0.15 nm), its outermost electrons are held most strongly by the nucleus, requiring the most energy to be removed.",
+                        diagram_alt: "Table showing elements P, Q, R with atomic sizes 0.19, 0.23, 0.15 nm respectively."
+                    },
+                    {
+                        question: "Starting with Lead(II) carbonate, explain how you would prepare a pure sample of Lead(II) sulphate.",
+                        answer: "1. Add excess dilute nitric acid to the lead(II) carbonate to form a solution of lead(II) nitrate. 2. Filter off the excess unreacted carbonate. 3. To the filtrate, add a solution of a soluble sulphate (e.g., sodium sulphate or dilute sulphuric acid). A white precipitate of lead(II) sulphate will form. 4. Filter to isolate the precipitate, wash it with distilled water, and dry."
+                    },
+                    {
+                        question: "a) What is an isotope? b) An element Q has 3 isotopes of mass 28 (92.2%), 29 (4.7%), and 30 (3.1%). Determine the R.A.M.",
+                        answer: "a) Isotopes are atoms of the same element with the same number of protons but different numbers of neutrons (and thus different mass numbers).<br>b) R.A.M = (28 * 0.922) + (29 * 0.047) + (30 * 0.031) = 25.816 + 1.363 + 0.93 = 28.109."
+                    },
+                    {
+                        question: "For elements P, Q, R in the same group: (a) What is the general name for the group? (b) Why does P have the highest ionization energy? (c) Write an equation for the reaction between Q and water.",
+                        answer: "a) Alkaline earth metals (Group 2).<br>b) P has the smallest atomic radius in the group. Its valence electrons are closest to the nucleus and held most strongly, thus requiring the most energy to remove.<br>c) Q(s) + 2H₂O(l) ⟶ Q(OH)₂(aq) + H₂(g)."
+                    }
+                ]
+            },
+            {
+                id: 'structure_and_bonding',
+                title: '8. Structure and bonding',
+                description: 'Understand the different types of chemical bonds and how they influence the properties of substances.',
+                questions: [
+                    {
+                        question: "Ethanol is a liquid at room temperature but does not conduct electricity. Explain.",
+                        answer: "Ethanol exists as neutral molecules (C₂H₅OH). It does not contain mobile ions or delocalized electrons, which are necessary for electrical conductivity."
+                    },
+                    {
+                        question: "a) Distinguish between a covalent bond and a co-ordinate bond. b) Draw a diagram to show bonding in an ammonium ion.",
+                        answer: "a) A covalent bond is formed by equal contribution of the shared electrons by both atoms. A co-ordinate (or dative) bond is a covalent bond where the shared electrons are contributed by only one of the atoms.<br>b) [Image Placeholder: Dot-and-cross diagram of an ammonium ion, showing three N-H covalent bonds and one N→H dative bond, with an overall +1 charge].",
+                        diagram_alt: "Dot-and-cross diagram of an ammonium ion."
+                    },
+                    {
+                        question: "a) Explain why the metals magnesium and aluminium are good conductors of electricity. b) Other than cost, give two reasons why aluminium is used for making electric cables while magnesium is not.",
+                        answer: "a) Both metals have delocalized valence electrons that are free to move throughout the metallic structure and carry charge.<br>b) 1. Aluminium is more resistant to corrosion than magnesium because it forms a tough, protective layer of aluminium oxide. 2. Aluminium is more ductile than magnesium, making it easier to draw into wires."
+                    },
+                    {
+                        question: "Explain why the boiling point of ethanol is higher than that of hexane.",
+                        answer: "In addition to weak van der Waals forces, strong hydrogen bonds exist between ethanol molecules due to the polar -OH group. These hydrogen bonds require much more energy to overcome compared to the van der Waals forces in hexane, resulting in a higher boiling point."
+                    },
+                    {
+                        question: "What is meant by dative covalent bond?",
+                        answer: "A dative covalent bond (or co-ordinate bond) is a covalent bond in which the shared pair of electrons is provided by only one of the bonded atoms."
+                    },
+                    {
+                        question: "Sodium and Magnesium are in the same period. Explain why magnesium is a better conductor of electricity than sodium.",
+                        answer: "Magnesium has two delocalized valence electrons per atom, whereas sodium has only one. Since magnesium has more mobile charge carriers, it is a better electrical conductor."
+                    },
+                    {
+                        question: "Using dots and crosses, draw the structures for: (a) Phosphorous chloride (PCl₃) (b) Hydroxonium ion (H₃O⁺)",
+                        answer: "a) [Image Placeholder: Dot-and-cross diagram for PCl₃, showing a central P atom with 3 bonding pairs with 3 Cl atoms and 1 lone pair].<br>b) [Image Placeholder: Dot-and-cross diagram for H₃O⁺, showing a central O atom with 2 bonding pairs with 2 H atoms, 1 dative bond to a H⁺ ion, and 1 lone pair, with an overall +1 charge].",
+                        diagram_alt: "Dot-and-cross diagrams for PCl₃ and H₃O⁺."
+                    },
+                    {
+                        question: "Between aluminium and copper which one is a better conductor? Explain.",
+                        answer: "Aluminium has more delocalized electrons (3) than copper (which typically uses 1 or 2). (Note: This is the reasoning based on simple models; in reality, copper is a better conductor due to other factors like electron mobility and crystal structure)."
+                    },
+                    {
+                        question: "Water has a boiling point of 100°C while hydrogen chloride has a boiling point of -115°C. Explain.",
+                        answer: "Water molecules are held together by strong hydrogen bonds in addition to van der Waals forces. Hydrogen chloride molecules are only held by weaker van der Waals forces. More energy is required to overcome the strong hydrogen bonds in water."
+                    },
+                    {
+                        question: "Explain why a luminous flame is capable of giving out light and soot.",
+                        answer: "A luminous flame results from incomplete combustion of the fuel gas. This produces tiny, unburnt particles of carbon (soot) which glow white-hot in the flame, producing light."
+                    },
+                    {
+                        question: "When blue litmus paper is dipped in a solution of aluminium chloride it turns red. Explain.",
+                        answer: "Aluminium chloride undergoes hydrolysis in water. The Al³⁺ ion reacts with water to produce H⁺ ions (or H₃O⁺ ions), making the solution acidic, which turns blue litmus paper red."
+                    },
+                    {
+                        question: "Carbon and Silicon are in the same group. Silicon(IV) Oxide has a high melting point, while solid Carbon(IV) Oxide sublimes at a low temperature. Explain.",
+                        answer: "Silicon(IV) oxide (SiO₂) has a giant covalent (atomic) structure with strong covalent bonds linking all atoms, requiring a large amount of energy to break. Carbon(IV) oxide (CO₂) has a simple molecular structure with weak intermolecular van der Waals forces, which require very little energy to overcome."
+                    },
+                    {
+                        question: "Element A (atomic no. 6) and B (atomic no. 9). (i) Write the electron arrangements. (ii) Draw a dot-cross diagram for the compound formed.",
+                        answer: "i) A: 2.4; B: 2.7<br>ii) [Image Placeholder: Dot-and-cross diagram for Carbon Tetrafluoride (CF₄), showing a central carbon atom sharing one electron with each of four fluorine atoms].",
+                        diagram_alt: "Dot-and-cross diagram for Carbon Tetrafluoride (CF₄)."
+                    },
+                    {
+                        question: "(a) Explain why aluminium is a better conductor than magnesium. (b) Give another reason (besides cost) why aluminium is used for cables.",
+                        answer: "a) Aluminium has three delocalized valence electrons per atom, while magnesium only has two. More mobile charge carriers lead to better conductivity.<br>b) Aluminium is highly resistant to corrosion due to the formation of a tough, protective layer of aluminium oxide."
+                    },
+                    {
+                        question: "Explain how electrical conductivity can distinguish between magnesium oxide and silicon(IV) oxide.",
+                        answer: "Heat both substances until they melt (or attempt to). Molten magnesium oxide will conduct electricity because it is an ionic compound with mobile ions. Silicon(IV) oxide will not conduct electricity in the molten state because it is a covalent compound and has no mobile ions or free electrons."
+                    },
+                    {
+                        question: "a) In the NaCl crystal structure, explain why it conducts electricity when molten but not when solid. b) Why is ammonia gas highly soluble in water? c) Name the bond N→H in an ammonium ion. d) i) What are different crystalline forms of an element called? ii) Describe how to obtain fullerenes from soot. iii) If a fullerene has an RMM of 720, what is its molecular formula?",
+                        answer: "a) In the solid state, the ions in NaCl are held in fixed positions in the crystal lattice and cannot move. When molten, the ions are free to move and can act as charge carriers.<br>b) Both ammonia and water are polar molecules and can form strong hydrogen bonds with each other.<br>c) Dative covalent bond (or co-ordinate bond).<br>d) i) Allotropes. ii) Add methylbenzene (a non-polar solvent) to the soot and stir. The fullerene (C₆₀) dissolves. Filter the mixture. Gently evaporate the methylbenzene from the filtrate to leave behind crystals of fullerene.<br>iii) The mass of one carbon atom is 12. Number of atoms = 720 / 12 = 60. The formula is C₆₀."
+                    },
+                    {
+                        question: "Explain why: (i) NaCl conducts electricity when molten. (ii) Graphite conducts electricity.",
+                        answer: "i) In the molten state, the ions (Na⁺ and Cl⁻) in sodium chloride are free to move and carry charge.<br>ii) Graphite has delocalized electrons between its layers that are free to move and carry charge."
+                    },
+                    {
+                        question: "From the table of substances, identify: (i) a substance with metallic structure. (ii) a substance with a molecular structure and is liquid at room temp. (iii) why substance B has two melting points. (iv) the difference in conductivity between molten A and C.",
+                        answer: "i) C: It is a good conductor in both solid and liquid states.<br>ii) D: Its melting point is below room temp (e.g., 25°C) and its boiling point is above room temp.<br>iii) It exists in different allotropic forms, which have different crystal structures and melting points.<br>iv) Molten A (ionic) conducts via mobile ions, while molten C (metallic) conducts via delocalized electrons.",
+                        diagram_alt: "A table of properties for substances A, B, C, D including conductivity and melting points."
+                    },
+                    {
+                        question: "2.3g of sodium reacted with 50g of ethanol. (a) Write the equation. (d) What is the difference in structure between ethanol and the white solid product?",
+                        answer: "a) 2Na(s) + 2CH₃CH₂OH(l) ⟶ 2CH₃CH₂ONa(aq) + H₂(g).<br>d) Ethanol has a simple molecular structure with intermolecular hydrogen bonds. The white solid, sodium ethoxide (CH₃CH₂ONa), has a giant ionic structure with strong ionic bonds."
+                    },
+                    {
+                        question: "A periodic table grid is given. (a) What type of bond forms between H and F? Explain.",
+                        answer: "The letters are non-standard. Assuming F is a group 1 metal and H is a group 17 non-metal, the bond would be ionic (electrovalent) due to the transfer of electrons from the metal to the non-metal.",
+                        diagram_alt: "A grid representing a section of the periodic table with letters in place of element symbols."
+                    },
+                    {
+                        question: "A periodic table grid is given. (i) What type of bond forms when Y reacts with Z? Explain. (ii) Compare atomic radii of A and B. (iii) Compare reactivity of Z and B.",
+                        answer: "i) Ionic bond. Y (Group 2 metal) loses electrons to Z (Group 17 non-metal).<br>ii) A is larger than B. Atomic radius decreases across a period as nuclear charge increases.<br>iii) Z is more reactive than B. Reactivity of non-metals in this group increases up the group as the ability to attract an electron increases with smaller atomic size.",
+                        diagram_alt: "A grid representing a section of the periodic table with letters in place of element symbols."
+                    },
+                    {
+                        question: "The table shows elements of the 3rd period. a) Explain the trend in atomic radius. b) Name the structure and bond type for oxides NO and TO₂. c) Explain why P conducts electricity but T does not.",
+                        answer: "a) Atomic radius decreases across the period. This is because the nuclear charge (number of protons) increases, pulling the electron shells more strongly towards the nucleus.<br>b) Oxide NO (MgO): Giant ionic structure, Ionic bond. Oxide TO₂ (Cl₂O): Simple molecular structure, Covalent bond.<br>c) Element P (Aluminium) is a metal with delocalized electrons that are free to move and conduct electricity. Element T (Chlorine) is a non-metal with electrons held in covalent bonds or lone pairs, so it has no mobile charge carriers.",
+                        diagram_alt: "A table of elements from Period 3 with their symbols."
+                    },
+                    {
+                        question: "A table gives info on elements A₁ to A₄. (i) In which period is A₂? (ii) Explain why atomic radius of A₁ > A₂ and ionic radius of A₄ > atomic radius of A₄. (iv) Draw bonding when A₁ reacts with A₄.",
+                        answer: "i) Period 2, because its electrons occupy two energy levels (2.3).<br>ii) I. A₁ and A₂ are in the same period. A₂ has more protons, so its nuclear charge is greater, pulling electrons closer. II. A₄ (a non-metal) gains an electron to form an ion. The incoming electron increases electron-electron repulsion, causing the electron cloud to expand.<br>iv) [Image Placeholder: Dot-and-cross diagram showing ionic bonding between A₁ (Lithium) and A₄ (Fluorine), forming Li⁺F⁻].",
+                        diagram_alt: "Dot-and-cross diagram of LiF and a table of electron configurations for elements A₁ to A₄."
+                    },
+                    {
+                        question: "Atomic number of P is 11, Q is 8. a) Write the formula of the compound formed. b) Draw a diagram to show bonding.",
+                        answer: "a) Formula is P₂Q (representing Na₂O).<br>b) [Image Placeholder: Dot-and-cross diagram showing two P⁺ ions and one Q²⁻ ion, indicating the transfer of one electron from each of the two P atoms to the Q atom].",
+                        diagram_alt: "Dot-and-cross diagram of Na₂O."
+                    },
+                    {
+                        question: "Name the type of bonding and structure in: (a) Ice (b) Magnesium chloride.",
+                        answer: "a) Ice: Bonding is covalent (within H₂O molecules) and hydrogen bonding (between H₂O molecules). Structure is simple molecular.<br>b) Magnesium chloride: Bonding is ionic. Structure is giant ionic."
+                    },
+                    {
+                        question: "Solid N (yellow) reacts with HCl to form solution L and with H₂SO₄ to form solution Q. Excess NaOH is added to L. (a) Identify solid N. (c) Write the formula of the complex ion formed.",
+                        answer: "a) Solid N is Zinc Oxide, ZnO (it is yellow when hot).<br>c) When excess NaOH is added to a solution containing Zn²⁺ ions (from reacting ZnO with HCl), the complex ion formed is the tetrahydroxozincate(II) ion, [Zn(OH)₄]²⁻."
+                    },
+                    {
+                        question: "(a) Show bonding in NH₂⁻ and S₈. (b) Show bonding in Carbon(II) Oxide (CO).",
+                        answer: "a) [Image Placeholder: Dot-and-cross diagrams for the amide ion NH₂⁻ and the crown-shaped S₈ ring].<br>b) The CO molecule is usually represented with a triple bond, one of which is a dative covalent bond: C≡O.",
+                        diagram_alt: "Dot-and-cross diagrams for NH₂⁻ and S₈."
+                    },
+                    {
+                        question: "Explain why diamond is the hardest naturally occurring substance.",
+                        answer: "Diamond has a giant atomic (covalent) structure. Each carbon atom is strongly covalently bonded to four other carbon atoms in a rigid tetrahedral network that extends in three dimensions. A large amount of energy is required to break these strong, numerous covalent bonds."
+                    },
+                    {
+                        question: "Identify the bond types in the ammonium ion (NH₄⁺).",
+                        answer: "It contains three normal covalent bonds and one dative (co-ordinate) covalent bond."
+                    },
+                    {
+                        question: "Elements B (atomic no. 9) and C (atomic no. 12). Write the formula of the compound formed and identify the bond.",
+                        answer: "Element B is Fluorine (F). Element C is Magnesium (Mg). Magnesium forms a Mg²⁺ ion and Fluorine forms F⁻ ions. The formula is MgF₂ (or CB₂). The bond is ionic."
+                    },
+                    {
+                        question: "(a) Distinguish between a covalent and a dative bond. (b) Explain why nitrogen gas is unreactive.",
+                        answer: "a) In a normal covalent bond, each atom contributes one electron to the shared pair. In a dative bond, one atom provides both electrons for the shared pair.<br>b) A molecule of nitrogen gas (N₂) contains a very strong triple covalent bond between the two nitrogen atoms. A large amount of energy is required to break this bond, hence its high activation energy and general unreactivity."
+                    },
+                    {
+                        question: "Draw a dot-cross diagram for: (i) Ammonium ion (NH₄⁺) (ii) Silane (SiH₄).",
+                        answer: "i) [Image Placeholder: Dot-and-cross diagram for NH₄⁺ showing 3 covalent N-H bonds and 1 dative N→H bond].<br>ii) [Image Placeholder: Dot-and-cross diagram for SiH₄ showing a central silicon atom forming four single covalent bonds with four hydrogen atoms].",
+                        diagram_alt: "Dot-and-cross diagrams for NH₄⁺ and SiH₄."
+                    },
+                    {
+                        question: "(a) Give the systematic name of Cl₂O. (b) Explain why Na₂O is a solid while SO₂ is a gas at room temp.",
+                        answer: "a) Dichlorine monoxide or Chlorine(I) oxide.<br>b) Na₂O is an ionic compound with a giant ionic lattice structure. The strong electrostatic forces between ions require a lot of energy to overcome. SO₂ is a simple molecular substance with weak intermolecular van der Waals forces, which require little energy to overcome."
+                    },
+                    {
+                        question: "Explain why AlCl₃ solid has a much lower boiling point than MgCl₂ solid.",
+                        answer: "MgCl₂ has a giant ionic structure with strong electrostatic forces of attraction between ions, requiring a large amount of energy to melt/boil. AlCl₃ has a simple molecular structure with weak van der Waals forces between its molecules, which require much less energy to overcome (it sublimes easily)."
+                    },
+                    {
+                        question: "(Duplicate of Q25)",
+                        answer: "See answer for Q25."
+                    }
+                ]
+            },
+            {
+                id: 'salts',
+                title: '9. Salts',
+                description: 'Learn about the properties, preparation, and different types of salts.',
+                questions: [
+                    {
+                        question: "Study the flow chart for a reaction starting with Copper. a) Name reagent Z. b) Describe the process in step 2. c) Identify the white solid.",
+                        answer: "a) Reagent Z is concentrated Sulphuric acid (H₂SO₄).<br>b) Step 2 is crystallization. The blue solution is heated to concentrate it (drive off some water) and then allowed to cool slowly, causing crystals of hydrated copper(II) sulphate to form.<br>c) The white solid is anhydrous copper(II) sulphate (CuSO₄).",
+                        diagram_alt: "A flow chart showing Copper reacting with reagent Z to form a blue solution, which then undergoes crystallization (step 2) to form a blue solid, which is then heated to form a white solid."
+                    },
+                    {
+                        question: "a) Starting from solid magnesium oxide, describe how a solid sample of magnesium hydroxide can be prepared. b) Give one use of magnesium hydroxide.",
+                        answer: "a) 1. React solid magnesium oxide with an excess of a suitable dilute acid (e.g., nitric acid or hydrochloric acid) to form a soluble magnesium salt. 2. Filter off any unreacted oxide. 3. To the filtrate, add an alkali like sodium hydroxide or aqueous ammonia to precipitate insoluble magnesium hydroxide. 4. Filter the mixture to obtain magnesium hydroxide as the residue. 5. Wash the residue with distilled water and dry it.<br>b) As an antacid to relieve indigestion (e.g., in milk of magnesia)."
+                    },
+                    {
+                        question: "Starting with lead(II) oxide, describe how you would prepare a solid sample of lead(II) Carbonate.",
+                        answer: "1. React lead(II) oxide with excess dilute nitric acid and warm to form a solution of lead(II) nitrate. 2. Filter to remove unreacted lead(II) oxide. 3. To the filtrate, add a solution of a soluble carbonate, such as sodium carbonate. A white precipitate of lead(II) carbonate will form. 4. Filter to isolate the precipitate, wash it with distilled water, and then dry it."
+                    },
+                    {
+                        question: "A diagram shows thermal decomposition of Pb(NO₃)₂. a) Name the two salts formed in tube A. b) State the observations in tube C. c) Name gas P.",
+                        answer: "a) Sodium nitrate and sodium nitrite.<br>b) The black wood charcoal glows red.<br>c) Carbon(II) oxide.",
+                        diagram_alt: "A diagram showing the thermal decomposition of Lead(II) Nitrate, with resulting gases passed through various tubes including one with charcoal (tube C)."
+                    },
+                    {
+                        question: "a) Complete the table by filling in the blank spaces (i), (ii) (iii), and (iv). b) Identify the particles which are electrically charged.",
+                        answer: "a) (i) 20, (ii) 16, (iii) 39, (iv) 20.<br>b) E, G, and H are electrically charged (they are ions).",
+                        diagram_alt: "A table with columns for particle, protons, electrons, and neutrons, with some blank spaces to be filled in."
+                    },
+                    {
+                        question: "Sodium Carbonate Decahydrate crystals were left exposed. a) State the observations made. b) Name the property of salts investigated.",
+                        answer: "a) The crystals lost their shiny, translucent appearance and became a white, opaque powder.<br>b) Efflorescence."
+                    },
+                    {
+                        question: "Starting with sodium oxide, describe how a sample of crystals of sodium hydrogen carbonate may be prepared.",
+                        answer: "1. React sodium oxide with water to form a solution of sodium hydroxide. 2. Bubble excess carbon(IV) oxide gas through the sodium hydroxide solution. This will precipitate sodium hydrogen carbonate, which is less soluble. 3. Filter the mixture to obtain the solid sodium hydrogen carbonate."
+                    },
+                    {
+                        question: "When ammonium chloride was heated, a moist red litmus paper at the mouth of the test tube first changed blue then red. Explain.",
+                        answer: "Ammonium chloride decomposes upon heating into ammonia (NH₃) and hydrogen chloride (HCl) gases. Ammonia is less dense and diffuses faster up the tube, reaching the litmus first and turning it blue. The denser hydrogen chloride gas reaches the paper later and, being acidic, neutralizes the ammonia and then turns the litmus paper red."
+                    },
+                    {
+                        question: "Using dots and crosses, show the structure of the ammonium ion.",
+                        answer: "[Image Placeholder: A dot-and-cross diagram showing a central nitrogen atom forming three normal covalent bonds with three hydrogen atoms, and one dative covalent bond with a fourth hydrogen ion (H⁺), with a positive charge on the overall ion].",
+                        diagram_alt: "A dot-and-cross diagram showing the bonding in an ammonium ion (NH₄⁺)."
+                    },
+                    {
+                        question: "a) Name the processes: i) Anhydrous copper sulphate becomes wet. ii) Magnesium chloride forms an aqueous solution. iii) Fresh crystals of sodium carbonate become a white powder. b) Write the formula of the complex ion formed when: i) Zinc metal dissolves in hot alkaline solution. ii) Copper hydroxide dissolves in excess ammonia solution.",
+                        answer: "a) i) Hygroscopy, ii) Deliquescence, iii) Efflorescence.<br>b) i) Tetrahydroxozincate(II) ion: [Zn(OH)₄]²⁻. ii) Tetraamminecopper(II) ion: [Cu(NH₃)₄]²⁺."
+                    },
+                    {
+                        question: "a) Write an equation to show the effect of heat on the nitrate of: (i) Potassium (ii) Silver.",
+                        answer: "i) 2KNO₃(s) ⟶ 2KNO₂(s) + O₂(g).<br>ii) 2AgNO₃(s) ⟶ 2Ag(s) + 2NO₂(g) + O₂(g)."
+                    },
+                    {
+                        question: "A scheme starts with magnesium oxide. (i) Name the reagents used in steps 2 and 4. (ii) Write an equation for the reaction in step 3. (iii) Describe how to obtain anhydrous magnesium carbonate in step 5.",
+                        answer: "i) Step 2: Carbon (IV) oxide. Step 4: Dilute hydrochloric acid.<br>ii) Mg(HCO₃)₂(aq) --(heat)--> MgCO₃(s) + H₂O(l) + CO₂(g).<br>iii) Add a solution of a soluble carbonate (like sodium carbonate) to the aqueous magnesium chloride. Filter the white precipitate of magnesium carbonate, wash it with distilled water, and dry it.",
+                        diagram_alt: "A reaction scheme starting with magnesium oxide, going through several steps including reaction with CO₂ (step 2) and HCl (step 4)."
+                    },
+                    {
+                        question: "In the preparation of magnesium carbonate, Mg was burnt, acid was added, then sodium carbonate. (d) Write an equation between the product in (a) and acid. (e) Write an ionic equation for the white powder formation. (f) Write an equation for heating the white powder.",
+                        answer: "d) MgO(s) + H₂SO₄(aq) ⟶ MgSO₄(aq) + H₂O(l).<br>e) Mg²⁺(aq) + CO₃²⁻(aq) ⟶ MgCO₃(s).<br>f) MgCO₃(s) --(heat)--> MgO(s) + CO₂(g)."
+                    },
+                    {
+                        question: "You are provided with solid lead(II) nitrate, magnesium oxide powder, dilute sulphuric(VI) acid, and distilled water. Describe how to prepare a dry sample of lead(II) sulphate.",
+                        answer: "1. Dissolve the solid lead(II) nitrate in distilled water to make a solution. 2. Prepare a solution of a soluble sulphate, for example by reacting magnesium oxide with dilute sulphuric(VI) acid and filtering. 3. Mix the lead(II) nitrate solution with the soluble sulphate solution. A white precipitate of lead(II) sulphate will form. 4. Filter to isolate the precipitate, wash with distilled water, and dry."
+                    },
+                    {
+                        question: "Use the scheme to answer the questions that follow: [Solid N (yellow) --HCl--> Solution L. Solid N --H₂SO₄--> Solution Q]. (a) Identify solid N. (b) Write a balanced equation for the formation of Q. (c) Write the formula of the complex ion formed when excess NaOH is added to solution L.",
+                        answer: "a) Solid N is Zinc Oxide (ZnO).<br>b) ZnO(s) + H₂SO₄(aq) ⟶ ZnSO₄(aq) + H₂O(l).<br>c) [Zn(OH)₄]²⁻.",
+                        diagram_alt: "A reaction scheme showing Solid N reacting with HCl and H₂SO₄."
+                    },
+                    {
+                        question: "When exposed to air, crystals of hydrated sodium carbonate lose water. (i) Name this process. (ii) Write the formula of hydrated sodium carbonate.",
+                        answer: "i) Efflorescence.<br>ii) Na₂CO₃·10H₂O."
+                    },
+                    {
+                        question: "A student poured sodium iodide solution into solution Q, and a yellow precipitate was formed. (i) Which ion was most likely in solution Q? (ii) Write an ionic equation for the formation of the yellow precipitate.",
+                        answer: "i) Lead(II) ion (Pb²⁺).<br>ii) Pb²⁺(aq) + 2I⁻(aq) ⟶ PbI₂(s)."
+                    },
+                    {
+                        question: "Explain why Calcium oxide can be used as a solid drying agent for some laboratory gases.",
+                        answer: "Calcium oxide is a basic oxide and is hygroscopic (absorbs water). It can be used to dry neutral or basic gases like ammonia, but it will react with acidic gases (like CO₂, SO₂, HCl) and cannot be used to dry them."
+                    },
+                    {
+                        question: "A piece of marble (CaCO₃) was strongly heated. Water was added to the warm product. Using equations, explain what happens.",
+                        answer: "i) The marble decomposes upon heating: CaCO₃(s) ⟶ CaO(s) + CO₂(g).<br>ii) The product (calcium oxide, or quicklime) reacts exothermically with water to form calcium hydroxide (slaked lime): CaO(s) + H₂O(l) ⟶ Ca(OH)₂(aq)."
+                    },
+                    {
+                        question: "A flow chart shows Solid A being heated to produce Brown Gas B, Gas C, and Solid K (yellow when hot, white when cold). (a) Identify gases C and B, and ions in solid A.",
+                        answer: "a) i) Gas B is Nitrogen(IV) oxide (NO₂). Gas C is Oxygen (O₂). Solid K is Zinc Oxide (ZnO).<br>ii) The ions in solid A are Zinc (Zn²⁺) and Nitrate (NO₃⁻). Solid A is Zinc Nitrate.",
+                        diagram_alt: "A flow chart illustrating the thermal decomposition of Solid A."
+                    },
+                    {
+                        question: "Potassium nitrate crystals were heated strongly. State the observation: (a) When a glowing splint is introduced. (b) At the end of the heating.",
+                        answer: "a) The glowing splint relights, indicating the production of oxygen gas.<br>b) A pale yellow solid (potassium nitrite) remains when hot, which turns white on cooling."
+                    },
+                    {
+                        question: "Name the process when: (a) Anhydrous iron(III) chloride absorbs water vapour to form a solution. (b) Zinc chloride vapour changes directly to a solid.",
+                        answer: "a) Deliquescence.<br>b) Deposition (or sublimation in reverse)."
+                    },
+                    {
+                        question: "A setup shows a burning candle in a gas jar over sodium hydroxide solution. (a) State two sources of error in this experiment (to determine the percentage of air used).",
+                        answer: "1. The candle may go out before all the oxygen is used up due to the build-up of carbon dioxide. 2. The heat from the candle causes the air in the gas jar to expand, which can give an inaccurate reading of the volume change.",
+                        diagram_alt: "An experimental setup showing a burning candle in a gas jar inverted over a trough of sodium hydroxide solution."
+                    },
+                    {
+                        question: "You are given several salts. (a) Classify them as acid, basic, normal, or double salts. (b) Explain what happens when FeCl₃ is dissolved in water and tested with moist litmus.",
+                        answer: "a) Acid Salt: NaH₂PO₄(s). Basic Salt: Mg(OH)Cl(s). Normal Salt: Ca(NO₃)₂(s). Double Salt: Fe(NH₄)₂(SO₄)₂·6H₂O.<br>b) FeCl₃ undergoes hydrolysis in water, producing an acidic solution. This is because the Fe³⁺ ion reacts with water, releasing H⁺ ions. The solution will turn moist blue litmus paper red."
+                    }
+                ]
+            }
+        ];
+
+        const dashboardView = document.getElementById('dashboard-view');
+        const topicView = document.getElementById('topic-view');
+        const dashboardContainer = document.getElementById('dashboard-container');
+        const topicTitle = document.getElementById('topic-title');
+        const qaContainer = document.getElementById('qa-container');
+
+        let currentTopicIndex = -1;
+
+        function showDashboard() {
+            dashboardView.classList.remove('hidden');
+            topicView.classList.add('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function showTopic(index) {
+            if (index < 0 || index >= topics.length) return;
+            
+            currentTopicIndex = index;
+            const topic = topics[index];
+
+            topicTitle.textContent = topic.title;
+            qaContainer.innerHTML = ''; // Clear previous content
+
+            const qaWrapper = document.createElement('div');
+            qaWrapper.className = 'bg-white shadow-lg rounded-xl overflow-hidden';
+            const qaList = document.createElement('div');
+            qaList.className = 'divide-y divide-gray-200';
+
+            if (topic.questions && topic.questions.length > 0) {
+                topic.questions.forEach((qa, i) => {
+                    const questionContainer = document.createElement('div');
+                    questionContainer.className = 'question-container';
+
+                    let questionHTML = `
+                        <div class="question-header p-6 cursor-pointer hover:bg-gray-50">
+                            <div class="flex justify-between items-center">
+                                <p class="font-semibold text-lg text-gray-700">${i + 1}. ${qa.question}</p>
+                                <span class="icon text-2xl text-gray-400">&rarr;</span>
+                            </div>`;
+                    
+                    if (qa.diagram_alt) {
+                        questionHTML += `<img src="" alt="${qa.diagram_alt}">`;
+                    }
+                    
+                    questionHTML += `</div>
+                        <div class="answer">
+                            <div class="p-6 border-l-4 border-blue-500 text-gray-600">${qa.answer}</div>
+                        </div>`;
+                    
+                    questionContainer.innerHTML = questionHTML;
+                    qaList.appendChild(questionContainer);
+                });
+            } else {
+                qaList.innerHTML = '<p class="p-6 text-gray-500">No questions available for this topic yet.</p>';
+            }
+            
+            qaWrapper.appendChild(qaList);
+            qaContainer.appendChild(qaWrapper);
+
+            // Add event listeners for the new collapsible questions
+            qaList.querySelectorAll('.question-header').forEach(header => {
+                header.addEventListener('click', () => {
+                    const answer = header.nextElementSibling;
+                    const isActive = header.classList.toggle('active');
+                    answer.classList.toggle('active', isActive);
+                });
+            });
+
+            updateNavigation();
+            dashboardView.classList.add('hidden');
+            topicView.classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function updateNavigation() {
+            const isFirstTopic = currentTopicIndex === 0;
+            const isLastTopic = currentTopicIndex === topics.length - 1;
+
+            ['prev-topic-top', 'prev-topic-bottom'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.disabled = isFirstTopic;
+                btn.classList.toggle('opacity-50', isFirstTopic);
+                btn.classList.toggle('cursor-not-allowed', isFirstTopic);
+            });
+
+            ['next-topic-top', 'next-topic-bottom'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.disabled = isLastTopic;
+                btn.classList.toggle('opacity-50', isLastTopic);
+                btn.classList.toggle('cursor-not-allowed', isLastTopic);
+            });
+        }
+        
+        function populateDashboard() {
+            dashboardContainer.innerHTML = '';
+            topics.forEach((topic, index) => {
+                const topicLink = document.createElement('a');
+                topicLink.href = '#';
+                topicLink.className = 'bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300';
+                topicLink.innerHTML = `
+                    <h2 class="text-2xl font-bold text-gray-800">${topic.title}</h2>
+                    <p class="text-gray-600 mt-2">${topic.description}</p>
+                `;
+                topicLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showTopic(index);
+                });
+                dashboardContainer.appendChild(topicLink);
+            });
+        }
+        
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            populateDashboard();
+
+            // Navigation buttons
+            ['prev-topic-top', 'prev-topic-bottom'].forEach(id => {
+                document.getElementById(id).addEventListener('click', () => showTopic(currentTopicIndex - 1));
+            });
+            ['next-topic-top', 'next-topic-bottom'].forEach(id => {
+                document.getElementById(id).addEventListener('click', () => showTopic(currentTopicIndex + 1));
+            });
+            ['dashboard-btn-top', 'dashboard-btn-bottom'].forEach(id => {
+                document.getElementById(id).addEventListener('click', showDashboard);
+            });
+        });
+
+    </script>
+
+</body>
+</html>
